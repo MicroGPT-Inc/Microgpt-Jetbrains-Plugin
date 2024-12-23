@@ -1,0 +1,22 @@
+<idea-plugin>
+    <id>com.example.codeoptimizer</id>
+    <name>Code Optimizer</name>
+    <description>A JetBrains plugin to optimize and analyze your Java and Kotlin code.</description>
+    <version>1.0</version>
+    <vendor email="hemant.samriya@oodles.io" url="https://my.oodles.io/#/dashboard">Oodles</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceInterface="org.majjid.plugin.CodeAnalysisService"
+                            serviceImplementation="org.majjid.plugin.CodeAnalysisService"/>
+    </extensions>
+
+    <actions>
+        <action id="CodeOptimizerAction" class="org.majjid.plugin.CodeOptimizerAction"
+                text="Optimize Code" description="Analyze and optimize code using AI">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
