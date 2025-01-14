@@ -78,6 +78,7 @@ class CodeSuggestionToolWindow {
     public static final String AI_SUGGESTIONS = "AI Suggestions";
     public static final @Nullable Runnable NULL = null;
     public static final String TEXT = "Apply Changes";
+    public static final String GENERATE = "Generate";
 
     public static void showSuggestions(Project project, String suggestions, Editor editor, Document document) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
@@ -137,7 +138,8 @@ class CodeSuggestionToolWindow {
         });
 
         // Submit Query button for chatgpt
-        JButton submitQueryButtonChatgpt = new JButton(CHAT_GPT);
+//        JButton submitQueryButtonChatgpt = new JButton(CHAT_GPT);
+        JButton submitQueryButtonChatgpt = new JButton(GENERATE);
         submitQueryButtonChatgpt.addActionListener(e -> {
             String userQuery = queryField.getText().trim();
             if (userQuery.isEmpty()) {
@@ -170,7 +172,7 @@ class CodeSuggestionToolWindow {
         });
 
         // Add buttons to the button panel
-        buttonPanel.add(submitQueryButtonGemini);
+//        buttonPanel.add(submitQueryButtonGemini);
         buttonPanel.add(submitQueryButtonChatgpt);
         buttonPanel.add(applyButton);
         buttonPanel.add(cancelButton);

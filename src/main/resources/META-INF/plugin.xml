@@ -1,12 +1,16 @@
 <idea-plugin>
-    <id>com.example.codeoptimizer</id>
+    <idea-version since-build="231" until-build="232.*"/>
+    <id>com.microgpt.codeoptimizer</id>
     <name>Code Optimizer</name>
-    <description>A JetBrains plugin to optimize and analyze your Java and Kotlin code.</description>
+    <description>A JetBrains plugin to optimize and analyze your code.</description>
     <version>1.0</version>
     <vendor email="hemant.samriya@oodles.io" url="https://my.oodles.io/#/dashboard">Oodles</vendor>
 
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends optional="true">com.intellij.modules.java</depends>
+    <depends optional="true">com.intellij.modules.javascript</depends>
+<!--    <depends>JavaScript</depends>-->
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceInterface="org.majjid.plugin.CodeAnalysisService"
