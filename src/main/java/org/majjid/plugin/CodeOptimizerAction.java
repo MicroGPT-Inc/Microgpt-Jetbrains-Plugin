@@ -1,6 +1,5 @@
 package org.majjid.plugin;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -10,9 +9,8 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.wm.RegisterToolWindowTask;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowAnchor;
+import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -61,7 +59,7 @@ class SecurityUtil {
 }
 
 // Side panel Tool Window to show suggestions
-class CodeSuggestionToolWindow {
+class CodeSuggestionToolWindow implements ToolWindowFactory {
 
     public static final String CODE_SUGGESTIONS = "Code Suggestions";
     public static final String ENTER_YOUR_QUERY = "Enter your query:";
@@ -80,32 +78,44 @@ class CodeSuggestionToolWindow {
     public static final String TEXT = "Apply Changes";
     public static final String GENERATE = "Generate";
 
+
+    @Override
+    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        JPanel panel = new JPanel();
+        panel.add(new JLabel("Welcome to Code Analysis"));
+        toolWindow.getComponent().add(panel);
+    }
+
     public static void showSuggestions(Project project, String suggestions, Editor editor, Document document) {
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
         ToolWindow toolWindow = toolWindowManager.getToolWindow(CODE_SUGGESTIONS);
 
         if (toolWindow == null) {
-            toolWindowManager.registerToolWindow(RegisterToolWindowTask.closable(
-                    CODE_SUGGESTIONS, // ID
-                    AllIcons.General.Information,
-                    ToolWindowAnchor.RIGHT // Anchor position
-            ));
-            toolWindow = toolWindowManager.getToolWindow(CODE_SUGGESTIONS);
+            // Instead of registerToolWindow, use extension point in plugin.xml
+            return;
         }
 
-        if (!toolWindow.isAvailable()) {
-            toolWindow.setAvailable(true);
-        }
+        toolWindow.setAvailable(true);
+
+        JPanel panel = createToolWindowPanel(project, suggestions, document, toolWindow);
 
         ContentFactory contentFactory = ContentFactory.getInstance();
+        Content content = contentFactory.createContent(panel, AI_SUGGESTIONS, false);
+        toolWindow.getContentManager().removeAllContents(true);
+        toolWindow.getContentManager().addContent(content);
+
+        toolWindow.show();
+    }
+
+    private static JPanel createToolWindowPanel(Project project, String suggestions, Document document, ToolWindow toolWindow) {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Text area to display suggestions
+        // Text area for suggestions
         JTextArea suggestionArea = new JTextArea(suggestions);
         suggestionArea.setEditable(false);
         panel.add(new JScrollPane(suggestionArea), BorderLayout.CENTER);
 
-        // Text box for user query input
+        // Query input panel
         JPanel queryPanel = new JPanel(new BorderLayout());
         JLabel queryLabel = new JLabel(ENTER_YOUR_QUERY);
         JTextField queryField = new JTextField();
@@ -113,78 +123,59 @@ class CodeSuggestionToolWindow {
         queryPanel.add(queryField, BorderLayout.CENTER);
         panel.add(queryPanel, BorderLayout.NORTH);
 
+        // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        addButtons(buttonPanel, project, document, suggestionArea, queryField, toolWindow);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
 
+        return panel;
+    }
+
+    private static void addButtons(JPanel buttonPanel, Project project, Document document,
+                                   JTextArea suggestionArea, JTextField queryField, ToolWindow toolWindow) {
+        // Generate button
+        JButton generateButton = new JButton(GENERATE);
+        generateButton.addActionListener(e -> handleGenerateAction(queryField, document, suggestionArea));
 
         // Apply button
         JButton applyButton = new JButton(TEXT);
-        applyButton.addActionListener(e -> {
-            String updatedSuggestions = suggestionArea.getText();
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                WriteCommandAction.runWriteCommandAction(project, () -> {
-                    document.setText(updatedSuggestions);
-                });
-            });
-            Messages.showInfoMessage(SUGGESTIONS_APPLIED_SUCCESSFULLY, SUCCESS);
-//            toolWindow.hide(null); // Hide the tool window after applying changes
-        });
+        applyButton.addActionListener(e -> handleApplyAction(project, document, suggestionArea));
 
         // Cancel button
         JButton cancelButton = new JButton(CANCEL);
-        ToolWindow finalToolWindow = toolWindow;
-        cancelButton.addActionListener(e -> {
-            Messages.showInfoMessage(SUGGESTIONS_WERE_NOT_APPLIED, CANCELLED);
-            finalToolWindow.hide(NULL); // Hide the tool window
-        });
+        cancelButton.addActionListener(e -> handleCancelAction(toolWindow));
 
-        // Submit Query button for chatgpt
-//        JButton submitQueryButtonChatgpt = new JButton(CHAT_GPT);
-        JButton submitQueryButtonChatgpt = new JButton(GENERATE);
-        submitQueryButtonChatgpt.addActionListener(e -> {
-            String userQuery = queryField.getText().trim();
-            if (userQuery.isEmpty()) {
-                Messages.showWarningDialog(QUERY_CANNOT_BE_EMPTY, INVALID_QUERY);
-            } else {
-                // Placeholder: Call your AI service or query processor with user input
-                String fileContent = document.getText();
-                // Security: Redact sensitive information
-                String sanitizedContent = SecurityUtil.redactSensitiveInfo(fileContent);
-                String newSuggestions = CodeAnalysisService.getSuggestionsChatGPT(userQuery + " " + sanitizedContent);
-                suggestionArea.setText(newSuggestions);
-            }
-        });
-
-
-        // Submit Query button for chatgpt
-        JButton submitQueryButtonGemini = new JButton(GEMINI);
-        submitQueryButtonGemini.addActionListener(e -> {
-            String userQuery = queryField.getText().trim();
-            if (userQuery.isEmpty()) {
-                Messages.showWarningDialog(QUERY_CANNOT_BE_EMPTY_GEMINI, INVALID_QUERY);
-            } else {
-                // Placeholder: Call your AI service or query processor with user input
-                String fileContent = document.getText();
-                // Security: Redact sensitive information
-                String sanitizedContent = SecurityUtil.redactSensitiveInfo(fileContent);
-                String newSuggestions = CodeAnalysisService.getSuggestionsGemini(userQuery + " " + sanitizedContent);
-                suggestionArea.setText(newSuggestions);
-            }
-        });
-
-        // Add buttons to the button panel
-//        buttonPanel.add(submitQueryButtonGemini);
-        buttonPanel.add(submitQueryButtonChatgpt);
+        buttonPanel.add(generateButton);
         buttonPanel.add(applyButton);
         buttonPanel.add(cancelButton);
+    }
 
-        // Add button panel to the main panel
-        panel.add(buttonPanel, BorderLayout.SOUTH);
+    private static void handleGenerateAction(JTextField queryField, Document document, JTextArea suggestionArea) {
+        String userQuery = queryField.getText().trim();
+        if (userQuery.isEmpty()) {
+            Messages.showWarningDialog(QUERY_CANNOT_BE_EMPTY, INVALID_QUERY);
+            return;
+        }
 
-        Content content = contentFactory.createContent(panel, AI_SUGGESTIONS, false);
-        toolWindow.getContentManager().removeAllContents(true);
-        toolWindow.getContentManager().addContent(content);
+        String fileContent = document.getText();
+        String sanitizedContent = SecurityUtil.redactSensitiveInfo(fileContent);
+        String newSuggestions = CodeAnalysisService.getSuggestionsChatGPT(userQuery + " " + sanitizedContent);
+        suggestionArea.setText(newSuggestions);
+    }
 
-        toolWindow.show(null);
+    private static void handleApplyAction(Project project, Document document, JTextArea suggestionArea) {
+        String updatedSuggestions = suggestionArea.getText();
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                document.setText(updatedSuggestions);
+            });
+        });
+        Messages.showInfoMessage(SUGGESTIONS_APPLIED_SUCCESSFULLY, SUCCESS);
+    }
+
+    private static void handleCancelAction(ToolWindow toolWindow) {
+        Messages.showInfoMessage(SUGGESTIONS_WERE_NOT_APPLIED, CANCELLED);
+        toolWindow.hide();
     }
 }
 

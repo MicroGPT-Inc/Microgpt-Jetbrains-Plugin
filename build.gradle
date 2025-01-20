@@ -24,7 +24,7 @@ dependencies {
 }
 
 intellij {
-    version = '2023.2' // Use the same version as your IntelliJ IDEA
+    version = '2024.3.1.1' // Use the same version as your IntelliJ IDEA
     type = 'IC' // IntelliJ Community Edition
     plugins = ['java'] // Required dependencies
 }
@@ -32,11 +32,11 @@ intellij {
 tasks {
     patchPluginXml {
         sinceBuild.set('231') // Specify minimum build version
-        untilBuild.set('232.*') // Optional: Specify maximum build version
+        untilBuild.set('243.*') // Optional: Specify maximum build version
     }
 
     runIde {
-        jvmArgs = ['-Xmx2G'] // Adjust memory if necessary
+        jvmArgs = ['-Xmx4G'] // Adjust memory if necessary
     }
 }
 
