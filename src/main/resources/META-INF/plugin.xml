@@ -2,15 +2,41 @@
     <idea-version since-build="231" until-build="243.*"/>
     <id>com.microgpt.codeoptimizer</id>
     <name>Code Optimizer</name>
-    <description>A JetBrains plugin to optimize and analyze your code.</description>
+    <description>
+        The <b>Code Optimizer Plugin</b> is a JetBrains plugin designed to optimize and refactor your code seamlessly
+        using ChatGPT's AI capabilities. It provides intelligent suggestions to enhance your code's structure,
+        readability, and performance. With interactive customization options, the plugin empowers developers to
+        streamline their workflow efficiently.
+    </description>
+    <change-notes>
+        Initial release of Code Optimizer Plugin:
+        - Optimize and refactor code with ChatGPT AI
+        - View and apply smart coding suggestions
+        - Interactive query support for custom code improvements
+    </change-notes>
+    <instructions>
+        <ul>
+            <li>Install the <b>Code Optimizer Plugin</b> from the JetBrains Marketplace.
+            </li>
+            <li>Right-click within the code editor and select <b>"Optimize Code"</b> from the context menu.
+            </li>
+            <li>The right-side panel displays refactored and optimized code suggestions.</li>
+            <li>To customize suggestions, enter your query in the input field and click <b>Generate</b>.
+            </li>
+            <li>Click <b>Apply Changes</b> to update your code file with the optimized version.
+            </li>
+            <li>Click <b>Cancel</b> to close the suggestions panel if no changes are needed.
+            </li>
+        </ul>
+    </instructions>
     <version>1.0</version>
     <vendor email="hemant.samriya@oodles.io" url="https://my.oodles.io/#/dashboard">Oodles</vendor>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
-    <depends optional="true">com.intellij.modules.java</depends>
-    <depends optional="true">com.intellij.modules.javascript</depends>
-<!--    <depends>JavaScript</depends>-->
+    <!--    <depends optional="true">com.intellij.modules.java</depends>-->
+    <!--    <depends optional="true">com.intellij.modules.javascript</depends>-->
+    <!--    <depends>JavaScript</depends>-->
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceInterface="org.majjid.plugin.CodeAnalysisService"
